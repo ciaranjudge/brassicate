@@ -20,7 +20,7 @@ brassicate
 
 
 
-Automation scripts for user and project level setup of Python data science tools. Making it easy to eat all those leafy data science greens!
+Automation scripts for user and project level setup of Python data science tools. 
 
 
 * Free software: BSD license
