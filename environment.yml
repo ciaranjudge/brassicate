@@ -1,0 +1,15 @@
+name: brassicate
+
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - cookiecutter
+  - black
+  - doc8
+  - pylint
+  - pytest
+  - pyyaml
+  - sphinx
+
