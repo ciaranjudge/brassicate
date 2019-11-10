@@ -5,11 +5,23 @@ channels:
   - defaults
 
 dependencies:
-  - cookiecutter
   - black
+  - click
+  - cookiecutter
+  - coverage
   - doc8
+  - flake8
+  - pip
   - pylint
   - pytest
+  - pytest-runner
   - pyyaml
   - sphinx
+  - tox
+  - twine
+  - watchdog
+  - wheel
 
+  # Pip packages
+  - pip:
+    - bump2version
