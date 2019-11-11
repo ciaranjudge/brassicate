@@ -59,7 +59,7 @@ def find_env(env_name):
         return None
 
 
-def update_from_yml(
+def update_env_from_yml(
     yml_file: Path = Path("environment.yml"),
     enforce_readonly: bool = True,
     conda_prefix: Path = Path(os.environ["conda_prefix"]),
@@ -85,14 +85,29 @@ def update_from_yml(
     with writable(env_name, enforce_readonly, conda_prefix):
         if env_path is not None:
             # ?Not sure if '--prune' flag is doing anything...
-            subprocess.run("conda env update --file environment.yml --prune")
+            subprocess.run(f"conda env update --file {yml_file} --prune", shell=True)
         else:
             print(f"Environment {env_name} doesn't exist, so create it...")
-            subprocess.run("conda env create --file environment.yml")
+            subprocess.run(f"conda env create --file {yml_file}", shell=True)
 
-# TODO Base env updater that updates conda then other packages via environment file
-# ?Is update all needed for base or other envs?
 
+# TODO Limit frequency of base env update (weekly/daily/monthly)
+def update_base_env(
+    base_environment_yml: Path = Path.home() / ".conda" / "base-environment.yml",
+    enforce_readonly: bool = True,
+    conda_prefix: Path = Path(os.environ["conda_prefix"]),
+) -> None: # TODO Return code based on success/failure
+    """Update conda, and base environment if given base_environment_yml file.
+    With no base_environment_yml, just update conda itself.
+    Make base env temporarily writeable while updating,
+    then make read-only again afterwards if enforce_readonly flag is set.
+    """
+    with writable("base", enforce_readonly, conda_prefix):
+        subprocess.run("conda update conda --yes")
+    update_env_from_yml(base_environment_yml, enforce_readonly, conda_prefix)
+
+# TODO Current env updater similar to base env updater
+# Guess location of environment.yml
 
 # TODO Set environment variables from environment.yml
 def set_env_vars(
@@ -148,5 +163,5 @@ def set_env_vars(
     with open(deactivate_dir / "env_vars.bat", "w+") as f:
         f.writelines(deactivate_bat)
 
-
-
+if __name__ == "__main__":
+    update_from_yml()
