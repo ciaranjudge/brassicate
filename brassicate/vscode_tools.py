@@ -39,7 +39,7 @@ def update_json_settings(
     return template_settings
 
 def update_user_settings(
-    template_settings_path = Path("_config_scripts/user_config_templates/template_vscode_settings.json"),
+    template_settings_path = Path("_config_scripts/user_config_templates/template_settings.json"),
     target_settings_path = Path(os.environ["APPDATA"]) / "Code/User" / "settings.json"
 ):
     """Convenience wrapper for update_json_settings() with useful defaults for vscode settings
@@ -48,7 +48,7 @@ def update_user_settings(
     update_json_settings(template_settings_path, target_settings_path)
 
 def update_extensions(
-    template_settings_path = Path("_config_scripts/user_config_templates/template_vscode_extensions.json"),
+    template_settings_path = Path("_config_scripts/user_config_templates/template_extensions.json"),
     target_settings_path = Path(os.environ["APPDATA"]) / "Code/User" / "extensions.json"
 ):
     """Installs/updates vscode extensions and creates vscode user-level extensions.
