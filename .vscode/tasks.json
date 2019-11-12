@@ -4,11 +4,11 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Update conda environment",
+            "label": "Update project environment",
             "type": "shell",
-            "command": "${workspaceFolder}/bin/launch_conda_update.sh",
+            "command": "${workspaceFolder}/bin/update_project.sh",
             "windows": {
-                "command": "${workspaceFolder}\\bin\\launch_conda_update.bat"
+                "command": "${workspaceFolder}\\bin\\update_project.bat"
             },
             "options": {
             },
