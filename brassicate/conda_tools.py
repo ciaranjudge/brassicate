@@ -69,59 +69,6 @@ def find_env_paths(env_name: str):
     return env_exists, env_path, base_path
 
 
-def update_env_from_yml(environment_yml: Path, enforce_readonly: bool = True,) -> None:
-    """Given an environment.yml file that specifies a named conda env,
-    update the env based on the yml file packages (or create the env if it doesn't exist).
-    Make the env temporarily writable while updating,
-    then make it read-only again afterwards if enforce_readonly flag is set.
-    """
-    # *Get env name from environment_yml
-    # TODO Raise exception if environment_yml name field missing.
-    # TODO Raise exception if no dependencies specified. This creates blank env and is bad!
-    with open(environment_yml) as f:
-        environment_yml_data = yaml.load(f, Loader=yaml.FullLoader)
-    env_name = environment_yml_data["name"]
-    print(f"Found environment file for {env_name} at {environment_yml.resolve()}")
-
-    # *Make env writable and update or create it
-    # TODO Suppress unhelpful "EnvironmentSectionNotValid" warning from conda
-    env_exists, env_path, base_path = find_env_paths(env_name)
-    with writable(env_path, base_path, enforce_readonly):
-        if env_exists:
-            # ?Not sure if '--prune' flag is doing anything...
-            subprocess.run(
-                f"conda env update --file {environment_yml} --prune", shell=True
-            )
-        else:
-            print(f"Environment {env_name} doesn't exist, so create it...")
-            subprocess.run(f"conda env create --file {environment_yml}", shell=True)
-        subprocess.run(f"conda env update --all", shell=True)
-    environment_lock_yml = environment_yml.parent / "environment-lock.yml"
-    subprocess.run(
-        f"conda env export --name {env_name} --file {environment_lock_yml}", shell=True
-    )
-
-
-def update_base_env(
-    base_environment_yml: Path = Path.home() / ".conda" / "base-environment.yml",
-    enforce_readonly: bool = True,
-) -> None:
-    """Update conda, and base environment if given base_environment_yml file.
-    With no base_environment_yml, just update conda itself.
-    Make base env temporarily writeable while updating,
-    then make read-only again afterwards if enforce_readonly flag is set.
-    """
-    _, env_path, base_path = find_env_paths("base")
-    with writable(env_path, base_path, enforce_readonly):
-        subprocess.run("conda update conda --yes")
-    update_env_from_yml(base_environment_yml, enforce_readonly)
-
-
-def update_project_env(
-    environment_yml: Path = Path("environment.yml"), enforce_readonly: bool = True,
-) -> None:
-    update_env_from_yml(environment_yml, enforce_readonly)
-
 
 # TODO Set environment variables from environment.yml
 def set_env_vars(env_name: str, env_vars: dict):
@@ -177,5 +124,61 @@ def set_env_vars(env_name: str, env_vars: dict):
         f.writelines(deactivate_bat)
 
 
+
+def update_env_from_yml(environment_yml: Path, enforce_readonly: bool = True,) -> None:
+    """Given an environment.yml file that specifies a named conda env,
+    update the env based on the yml file packages (or create the env if it doesn't exist).
+    Make the env temporarily writable while updating,
+    then make it read-only again afterwards if enforce_readonly flag is set.
+    """
+    # *Get env name from environment_yml
+    # TODO Raise exception if environment_yml name field missing.
+    # TODO Raise exception if no dependencies specified. This creates blank env and is bad!
+    with open(environment_yml) as f:
+        environment_data = yaml.safe_load(f)
+    env_name = environment_data["name"]
+    print(f"Found environment file for {env_name} at {environment_yml.resolve()}")
+
+    # *Make env writable and update or create it
+    # TODO Suppress unhelpful "EnvironmentSectionNotValid" warning from conda
+    env_exists, env_path, base_path = find_env_paths(env_name)
+    with writable(env_path, base_path, enforce_readonly):
+        if env_exists:
+            # ?Not sure if '--prune' flag is doing anything...
+            subprocess.run(
+                f"conda env update --file {environment_yml} --prune", shell=True
+            )
+        else:
+            print(f"Environment {env_name} doesn't exist, so create it...")
+            subprocess.run(f"conda env create --file {environment_yml}", shell=True)
+        subprocess.run(f"conda env update --all", shell=True)
+    environment_lock_yml = environment_yml.parent / "environment-lock.yml"
+    subprocess.run(
+        f"conda env export --name {env_name} --file {environment_lock_yml}", shell=True
+    )
+
+
+def update_base_env(
+    base_environment_yml: Path = Path.home() / ".conda" / "base-environment.yml",
+    enforce_readonly: bool = True,
+) -> None:
+    """Update conda, and base environment if given base_environment_yml file.
+    With no base_environment_yml, just update conda itself.
+    Make base env temporarily writeable while updating,
+    then make read-only again afterwards if enforce_readonly flag is set.
+    """
+    _, env_path, base_path = find_env_paths("base")
+    with writable(env_path, base_path, enforce_readonly):
+        subprocess.run("conda update conda --yes")
+    update_env_from_yml(base_environment_yml, enforce_readonly)
+
+
+def update_project_env(
+    environment_yml: Path = Path("environment.yml"), enforce_readonly: bool = True,
+) -> None:
+    update_env_from_yml(environment_yml, enforce_readonly)
+
+
+
 if __name__ == "__main__":
-    print(find_env_paths("boo"))
+    update_project_env()
