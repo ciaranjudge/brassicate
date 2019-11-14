@@ -3,20 +3,21 @@ import os
 from pathlib import Path
 import subprocess
 
-# Local packages
-from read_yml import read_yml
+# External packages
+import yaml
 
 
-def update_jupyter_extensions(yml_file: Path = Path("jupyter_extensions.yml")):
-    # *Get env name from supplied yml_file
-    # TODO Raise exception if yml_file name field missing.
-    # read_yml() is a convenience wrapper for yaml.load()
-    # It catches FileNotFoundError, yaml.YAMLError, yaml.MarkedYAMLError
-    jupyter_extensions_yml = read_yml(yml_file)
-    env_name = jupyter_extensions_yml['name']
-    print(f"Found Jupyter extensions file for {env_name} at {yml_file.resolve()}")
+def update_extensions_from_yml(jupyter_extensions_yml: Path, conda_env_name: str):
+    """Given a jupyter_extensions yml file, update or install the specified extensions.
+    """
+    # *Get env name from supplied jupyter_extensions_yml
+    # TODO Raise exception if jupyter_extensions_yml name field missing.
+    with open(jupyter_extensions_yml) as f:
+        jupyter_extensions_data = yaml.safe_load(f)
+    env_name = jupyter_extensions_data['name']
+    print(f"Found Jupyter extensions file for {env_name} at {jupyter_extensions_yml.resolve()}")
 
-    for extension in jupyter_extensions_yml['extensions']:
+    for extension in jupyter_extensions_data['extensions']:
         subprocess.run(f"jupyter labextension install {extension}", shell=True)
     subprocess.run("jupyter lab build", shell=True)
 
