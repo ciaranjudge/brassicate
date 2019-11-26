@@ -33,16 +33,17 @@ def writable(env_path, base_path, enforce_readonly=True):
         os.chmod(base_canaryfile, S_IWRITE)  # make it writable
         # *In the case of a non-base env, make it writable too
         if not env_path == base_path:
-            # Create parent directory and canaryfile if they don't exist
-            env_canaryfile.parent.mkdir(parents=True, exist_ok=True)
-            Path.touch(env_canaryfile)
-            os.chmod(env_canaryfile, S_IWRITE)  # make it writable
+            if env_canaryfile.exists():
+                os.chmod(env_canaryfile, S_IWRITE)  # make it writable
         yield
     finally:
         if enforce_readonly:
             # Make base read-only
             os.chmod(base_canaryfile, S_IREAD)
             if not env_path == base_path:
+                # Create parent directory and canaryfile if they don't exist
+                env_canaryfile.parent.mkdir(parents=True, exist_ok=True)
+                Path.touch(env_canaryfile)
                 os.chmod(env_canaryfile, S_IREAD)
 
 
@@ -150,8 +151,8 @@ def update_env_from_yml(environment_yml: Path, enforce_readonly: bool = True,) -
             )
         else:
             print(f"Environment {env_name} doesn't exist, so create it...")
-            subprocess.run(f"conda env create --file {environment_yml}", shell=True)
-        subprocess.run(f"conda env update --all", shell=True)
+            subprocess.run(f"conda env create --file {environment_yml} -n {env_name}", shell=True)
+        # subprocess.run(f"conda env update --all", shell=True)
     environment_lock_yml = environment_yml.parent / "environment-lock.yml"
     subprocess.run(
         f"conda env export --name {env_name} --file {environment_lock_yml}", shell=True
